@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Streamlit secrets (NO subir)
+**/.streamlit/secrets.toml
+**/.streamlit/secrets.toml.*
+**/.streamlit/*.swp
+**/.streamlit/*.swo
+**/.streamlit/*.save

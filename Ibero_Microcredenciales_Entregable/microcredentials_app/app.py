@@ -8,6 +8,9 @@ basándose en sus documentos de enseñanza.
 import sys
 import os
 import time
+import hashlib
+import hmac
+
 
 # Asegurar que el directorio de la app esté en el path
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -43,10 +46,7 @@ st.set_page_config(
 # === Seguridad ===
 def check_password():
     """Retorna True si el usuario ingresó la contraseña correcta."""
-    if "password_correct" not in st.session_state:
-        st.session_state.password_correct = False
-
-    if st.session_state.password_correct:
+    if st.session_state.get("password_correct", False):
         return True
 
     # Estilos simples para login
@@ -58,23 +58,31 @@ def check_password():
         .stTextInput { width: 50%; margin: 0 auto; }
         div[data-testid="stVerticalBlock"] { text-align: center; }
         </style>
-        """, 
+        """,
         unsafe_allow_html=True
     )
-    
+
     st.title("🔐 Acceso a Microcredenciales")
     st.write("Universidad Iberoamericana")
-    
+
     password = st.text_input("Ingresa la contraseña", type="password")
-    
+
     if st.button("Ingresar", type="primary"):
-        if password == "micro2026":
+        expected_hash = st.secrets.get("APP_PASSWORD_HASH", "")
+        if not expected_hash:
+            st.error("Falta configurar APP_PASSWORD_HASH en Secrets.")
+            st.stop()
+
+        entered_hash = hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+        if hmac.compare_digest(entered_hash, expected_hash):
             st.session_state.password_correct = True
             st.rerun()
         else:
             st.error("Contraseña incorrecta")
-            
+
     return False
+
 
 if not check_password():
     st.stop()
